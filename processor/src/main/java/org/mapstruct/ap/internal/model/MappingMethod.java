@@ -23,6 +23,7 @@ import static org.mapstruct.ap.internal.util.Strings.join;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,6 +32,7 @@ import org.mapstruct.ap.internal.model.common.Accessibility;
 import org.mapstruct.ap.internal.model.common.ModelElement;
 import org.mapstruct.ap.internal.model.common.Parameter;
 import org.mapstruct.ap.internal.model.common.Type;
+import org.mapstruct.ap.internal.model.source.ForgedMethod;
 import org.mapstruct.ap.internal.model.source.Method;
 
 /**
@@ -51,6 +53,7 @@ public abstract class MappingMethod extends ModelElement {
     private final List<LifecycleCallbackMethodReference> beforeMappingReferencesWithMappingTarget;
     private final List<LifecycleCallbackMethodReference> beforeMappingReferencesWithoutMappingTarget;
     private final List<LifecycleCallbackMethodReference> afterMappingReferences;
+    private final List<ForgedMethod> forgedMethods;
 
     /**
      * constructor to be overloaded when local variable names are required prior to calling this constructor. (e.g. for
@@ -64,6 +67,15 @@ public abstract class MappingMethod extends ModelElement {
     protected MappingMethod(Method method, Collection<String> existingVariableNames,
                             List<LifecycleCallbackMethodReference> beforeMappingReferences,
                             List<LifecycleCallbackMethodReference> afterMappingReferences) {
+        this( method, existingVariableNames, beforeMappingReferences, afterMappingReferences,
+            Collections.<ForgedMethod>emptyList()
+        );
+    }
+
+    protected MappingMethod(Method method, Collection<String> existingVariableNames,
+                            List<LifecycleCallbackMethodReference> beforeMappingReferences,
+                            List<LifecycleCallbackMethodReference> afterMappingReferences,
+                            List<ForgedMethod> forgedMethods) {
         this.name = method.getName();
         this.parameters = method.getParameters();
         this.returnType = method.getReturnType();
@@ -75,6 +87,7 @@ public abstract class MappingMethod extends ModelElement {
         this.beforeMappingReferencesWithMappingTarget = filterMappingTarget( beforeMappingReferences, true );
         this.beforeMappingReferencesWithoutMappingTarget = filterMappingTarget( beforeMappingReferences, false );
         this.afterMappingReferences = afterMappingReferences;
+        this.forgedMethods = forgedMethods;
     }
 
     protected MappingMethod(Method method) {
@@ -84,6 +97,12 @@ public abstract class MappingMethod extends ModelElement {
     protected MappingMethod(Method method, List<LifecycleCallbackMethodReference> beforeMappingReferences,
                             List<LifecycleCallbackMethodReference> afterMappingReferences) {
         this( method, method.getParameterNames(), beforeMappingReferences, afterMappingReferences );
+    }
+
+    protected MappingMethod(Method method, List<LifecycleCallbackMethodReference> beforeMappingReferences,
+                            List<LifecycleCallbackMethodReference> afterMappingReferences,
+                            List<ForgedMethod> forgedMethods) {
+        this( method, method.getParameterNames(), beforeMappingReferences, afterMappingReferences, forgedMethods );
     }
 
     private String initResultName(Collection<String> existingVarNames) {
@@ -183,7 +202,7 @@ public abstract class MappingMethod extends ModelElement {
     }
 
     private List<LifecycleCallbackMethodReference> filterMappingTarget(List<LifecycleCallbackMethodReference> methods,
-                                                                         boolean mustHaveMappingTargetParameter) {
+                                                                       boolean mustHaveMappingTargetParameter) {
         if ( methods == null ) {
             return null;
         }
@@ -210,5 +229,9 @@ public abstract class MappingMethod extends ModelElement {
 
     public List<LifecycleCallbackMethodReference> getBeforeMappingReferencesWithoutMappingTarget() {
         return beforeMappingReferencesWithoutMappingTarget;
+    }
+
+    public List<ForgedMethod> getForgedMethods() {
+        return forgedMethods;
     }
 }

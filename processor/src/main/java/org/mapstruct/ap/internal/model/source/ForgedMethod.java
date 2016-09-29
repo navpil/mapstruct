@@ -45,8 +45,9 @@ public class ForgedMethod implements Method {
     private final ExecutableElement positionHintElement;
     private final List<Type> thrownTypes;
     private final MapperConfiguration mapperConfiguration;
+    private ForgedMethodHistory history;
 
-     /**
+    /**
      * Creates a new forged method with the given name.
      *
      * @param name the (unique name) for this method
@@ -65,6 +66,29 @@ public class ForgedMethod implements Method {
         this.name = Strings.sanitizeIdentifierName( name );
         this.mapperConfiguration = mapperConfiguration;
         this.positionHintElement = positionHintElement;
+    }
+
+     /**
+     * Creates a new forged method with the given name.
+     *
+     * @param name the (unique name) for this method
+     * @param sourceType the source type
+     * @param targetType the target type.
+     * @param mapperConfiguration the mapper configuration
+     * @param positionHintElement element used to for reference to the position in the source file.
+     * @param history a parent forged method if this is a forged method within a forged method
+     */
+    public ForgedMethod(String name, Type sourceType, Type targetType, MapperConfiguration mapperConfiguration,
+        ExecutableElement positionHintElement, ForgedMethodHistory history) {
+        String sourceParamName = Strings.decapitalize( sourceType.getName() );
+        String sourceParamSafeName = Strings.getSaveVariableName( sourceParamName );
+        this.parameters = Arrays.asList( new Parameter( sourceParamSafeName, sourceType ) );
+        this.returnType = targetType;
+        this.thrownTypes = new ArrayList<Type>();
+        this.name = Strings.sanitizeIdentifierName( name );
+        this.mapperConfiguration = mapperConfiguration;
+        this.positionHintElement = positionHintElement;
+        this.history = history;
     }
 
     /**
@@ -144,6 +168,10 @@ public class ForgedMethod implements Method {
         return thrownTypes;
     }
 
+    public ForgedMethodHistory getHistory() {
+        return history;
+    }
+
     public void addThrownTypes(List<Type> thrownTypesToAdd) {
         for ( Type thrownType : thrownTypesToAdd ) {
             // make sure there are no duplicates coming from the keyAssignment thrown types.
@@ -215,5 +243,34 @@ public class ForgedMethod implements Method {
     @Override
     public boolean isUpdateMethod() {
         return getMappingTargetParameter() != null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if ( this == o ) {
+            return true;
+        }
+        if ( o == null || getClass() != o.getClass() ) {
+            return false;
+        }
+
+        ForgedMethod that = (ForgedMethod) o;
+
+        if ( parameters != null ? !parameters.equals( that.parameters ) : that.parameters != null ) {
+            return false;
+        }
+        if ( returnType != null ? !returnType.equals( that.returnType ) : that.returnType != null ) {
+            return false;
+        }
+        return name != null ? name.equals( that.name ) : that.name == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = parameters != null ? parameters.hashCode() : 0;
+        result = 31 * result + ( returnType != null ? returnType.hashCode() : 0 );
+        result = 31 * result + ( name != null ? name.hashCode() : 0 );
+        return result;
     }
 }
