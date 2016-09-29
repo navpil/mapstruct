@@ -35,7 +35,6 @@ import org.mapstruct.ap.internal.model.source.FormattingParameters;
 import org.mapstruct.ap.internal.model.source.Method;
 import org.mapstruct.ap.internal.model.source.SelectionParameters;
 import org.mapstruct.ap.internal.prism.NullValueMappingStrategyPrism;
-import org.mapstruct.ap.internal.util.Message;
 import org.mapstruct.ap.internal.util.Strings;
 
 /**
@@ -60,6 +59,7 @@ public class IterableMappingMethod extends MappingMethod {
         private SelectionParameters selectionParameters;
         private FormattingParameters formattingParameters;
         private NullValueMappingStrategyPrism nullValueMappingStrategy;
+        private ForgedMethod forgedMethod;
 
         public Builder mappingContext(MappingBuilderContext mappingContext) {
             this.ctx = mappingContext;
@@ -102,6 +102,7 @@ public class IterableMappingMethod extends MappingMethod {
             String loopVariableName =
                 Strings.getSaveVariableName( sourceElementType.getName(), method.getParameterNames() );
 
+            SourceRHS sourceRHS = new SourceRHS(loopVariableName, sourceElementType);
             Assignment assignment = ctx.getMappingResolver().getTargetAssignment(
                 method,
                 "collection element",
@@ -110,18 +111,20 @@ public class IterableMappingMethod extends MappingMethod {
                 null, // there is no targetPropertyName
                 formattingParameters,
                 selectionParameters,
-                new SourceRHS( loopVariableName, sourceElementType ),
+                sourceRHS,
                 false
             );
 
             if ( assignment == null ) {
-                if ( method instanceof ForgedMethod ) {
-                    // leave messaging to calling property mapping
-                    return null;
-                }
-                else {
-                    ctx.getMessager().printMessage( method.getExecutable(), Message.ITERABLEMAPPING_MAPPING_NOT_FOUND );
-                }
+
+                assignment = forgeMapping(sourceRHS, sourceElementType, targetElementType);
+//                if ( method instanceof ForgedMethod ) {
+//                    // leave messaging to calling property mapping
+//                    return null;
+//                }
+//                else {
+//                    ctx.getMessager().printMessage( method.getExecutable(), Message.ITERABLEMAPPING_MAPPING_NOT_FOUND );
+//                }
             }
             else {
                 if ( method instanceof ForgedMethod ) {
@@ -162,17 +165,44 @@ public class IterableMappingMethod extends MappingMethod {
                     loopVariableName,
                     beforeMappingMethods,
                     afterMappingMethods,
-                    selectionParameters );
+                    selectionParameters,
+                    forgedMethod );
         }
-    }
 
+        private Assignment forgeMapping(SourceRHS sourceRHS, Type sourceType, Type targetType) {
+
+            String name = getName( sourceType, targetType );
+            forgedMethod = new ForgedMethod(name, sourceType, targetType, method.getMapperConfiguration(), method.getExecutable());
+
+            Assignment assignment = new MethodReference(forgedMethod, null, targetType);
+            assignment.setAssignment(sourceRHS);
+
+            return assignment;
+        }
+
+        private String getName(Type sourceType, Type targetType) {
+            String fromName = getName( sourceType );
+            String toName = getName( targetType );
+            return Strings.decapitalize( fromName + "To" + toName );
+        }
+
+        private String getName(Type type) {
+            StringBuilder builder = new StringBuilder();
+            for ( Type typeParam : type.getTypeParameters() ) {
+                builder.append( typeParam.getIdentification() );
+            }
+            builder.append( type.getIdentification() );
+            return builder.toString();
+        }
+
+    }
 
     private IterableMappingMethod(Method method, Assignment parameterAssignment, MethodReference factoryMethod,
                                   boolean mapNullToDefault, String loopVariableName,
-                                 List<LifecycleCallbackMethodReference> beforeMappingReferences,
-                                 List<LifecycleCallbackMethodReference> afterMappingReferences,
-                                 SelectionParameters selectionParameters ) {
-        super( method, beforeMappingReferences, afterMappingReferences );
+                                  List<LifecycleCallbackMethodReference> beforeMappingReferences,
+                                  List<LifecycleCallbackMethodReference> afterMappingReferences,
+                                  SelectionParameters selectionParameters, ForgedMethod forgedMethod) {
+        super( method, beforeMappingReferences, afterMappingReferences, java.util.Collections.singletonList(forgedMethod));
         this.elementAssignment = parameterAssignment;
         this.factoryMethod = factoryMethod;
         this.overridden = method.overridesMethod();

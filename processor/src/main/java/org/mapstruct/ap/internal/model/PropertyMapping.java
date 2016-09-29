@@ -24,6 +24,7 @@ import static org.mapstruct.ap.internal.model.assignment.Assignment.AssignmentTy
 import static org.mapstruct.ap.internal.model.assignment.Assignment.AssignmentType.TYPE_CONVERTED;
 import static org.mapstruct.ap.internal.model.assignment.Assignment.AssignmentType.TYPE_CONVERTED_MAPPED;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -80,10 +81,10 @@ public class PropertyMapping extends ModelElement {
     private final Assignment assignment;
     private final List<String> dependsOn;
     private final Assignment defaultValueAssignment;
-    private ForgedMethod forgedMethod;
+    private List<ForgedMethod> forgedMethods = new ArrayList<ForgedMethod>();
 
-    public ForgedMethod getForgedMethod() {
-        return forgedMethod;
+    public List<ForgedMethod> getForgedMethods() {
+        return forgedMethods;
     }
 
     private enum TargetWriteAccessorType {
@@ -196,7 +197,7 @@ public class PropertyMapping extends ModelElement {
         private SourceReference sourceReference;
         private FormattingParameters formattingParameters;
         private SelectionParameters selectionParameters;
-        private ForgedMethod forgedMethod;
+        private List<ForgedMethod> forgedMethods = new ArrayList<ForgedMethod>();
 
         public PropertyMappingBuilder sourceReference(SourceReference sourceReference) {
             this.sourceReference = sourceReference;
@@ -300,7 +301,7 @@ public class PropertyMapping extends ModelElement {
                 assignment,
                 dependsOn,
                 getDefaultValueAssignment(),
-                forgedMethod
+                    forgedMethods
             );
         }
 
@@ -650,6 +651,8 @@ public class PropertyMapping extends ModelElement {
 
                 assignment = new MethodReference( methodRef, null, targetType );
                 assignment.setAssignment( source );
+
+                forgedMethods.addAll(iterableMappingMethod.getForgedMethods());
             }
 
             return assignment;
@@ -683,6 +686,8 @@ public class PropertyMapping extends ModelElement {
                 }
                 assignment = new MethodReference( methodRef, null, targetType );
                 assignment.setAssignment( source );
+
+                forgedMethods.addAll(mapMappingMethod.getForgedMethods());
             }
 
             return assignment;
@@ -692,10 +697,12 @@ public class PropertyMapping extends ModelElement {
 
             Type sourceType = getSourceType();
             String name = getName( sourceType, targetType );
-            forgedMethod = new ForgedMethod(name, sourceType, targetType, method.getMapperConfiguration(), method.getExecutable());
+            ForgedMethod forgedMethod = new ForgedMethod(name, sourceType, targetType, method.getMapperConfiguration(), method.getExecutable());
 
             Assignment assignment = new MethodReference(forgedMethod, null, targetType);
             assignment.setAssignment(sourceRHS);
+
+            this.forgedMethods.add(forgedMethod);
 
             return assignment;
         }
@@ -879,13 +886,13 @@ public class PropertyMapping extends ModelElement {
                             Type targetType, String localTargetVarName, Assignment propertyAssignment,
                             List<String> dependsOn, Assignment defaultValueAssignment ) {
         this( name, null, targetWriteAccessorName, targetReadAccessorName,
-                        targetType, localTargetVarName, propertyAssignment, dependsOn, defaultValueAssignment, null );
+                        targetType, localTargetVarName, propertyAssignment, dependsOn, defaultValueAssignment, Collections.<ForgedMethod>emptyList() );
     }
 
     private PropertyMapping(String name, String sourceBeanName, String targetWriteAccessorName,
                             String targetReadAccessorName, Type targetType, String localTargetVarName,
                             Assignment assignment,
-                            List<String> dependsOn, Assignment defaultValueAssignment, ForgedMethod forgedMethod ) {
+                            List<String> dependsOn, Assignment defaultValueAssignment, List<ForgedMethod> forgedMethods ) {
         this.name = name;
         this.sourceBeanName = sourceBeanName;
         this.targetWriteAccessorName = targetWriteAccessorName;
@@ -896,7 +903,7 @@ public class PropertyMapping extends ModelElement {
         this.assignment = assignment;
         this.dependsOn = dependsOn != null ? dependsOn : Collections.<String>emptyList();
         this.defaultValueAssignment = defaultValueAssignment;
-        this.forgedMethod = forgedMethod;
+        this.forgedMethods = forgedMethods;
     }
 
     /**

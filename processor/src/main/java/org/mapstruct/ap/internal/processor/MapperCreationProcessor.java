@@ -259,14 +259,13 @@ public class MapperCreationProcessor implements ModelElementProcessor<List<Sourc
         return extraImports;
     }
 
-    //TODO: dmp 29-09-2016 use this method instead of getMappingMethods()
     private List<MappingMethod> getAllMappingMethods(MapperConfiguration mapperConfig, List<SourceMethod> methods) {
         List<MappingMethod> mappingMethods = getMappingMethods(mapperConfig, methods);
         List<ForgedMethod> forgedMethods = collectAllForgedMethods(mappingMethods);
 
         while(!forgedMethods.isEmpty()) {
             List<MappingMethod> mappingMethodsFromForged = createBeanMapping(forgedMethods);
-            forgedMethods = collectAllForgedMethods(mappingMethods);
+            forgedMethods = collectAllForgedMethods(mappingMethodsFromForged);
             mappingMethods.addAll(mappingMethodsFromForged);
         }
 
@@ -302,13 +301,7 @@ public class MapperCreationProcessor implements ModelElementProcessor<List<Sourc
     private List<ForgedMethod> collectAllForgedMethods(List<MappingMethod> mappingMethods) {
         ArrayList<ForgedMethod> forgedMethods = new ArrayList<ForgedMethod>();
         for (MappingMethod mappingMethod : mappingMethods) {
-            if(mappingMethod instanceof BeanMappingMethod) {
-                for (PropertyMapping propertyMapping : ((BeanMappingMethod) mappingMethod).getPropertyMappings()) {
-                    if(propertyMapping.getForgedMethod() != null) {
-                        forgedMethods.add(propertyMapping.getForgedMethod());
-                    }
-                }
-            }
+            forgedMethods.addAll(mappingMethod.getForgedMethods());
         }
         return forgedMethods;
     }

@@ -48,6 +48,7 @@ import org.mapstruct.ap.internal.model.common.Parameter;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.mapstruct.ap.internal.model.dependency.GraphAnalyzer;
 import org.mapstruct.ap.internal.model.dependency.GraphAnalyzer.GraphAnalyzerBuilder;
+import org.mapstruct.ap.internal.model.source.ForgedMethod;
 import org.mapstruct.ap.internal.model.source.Mapping;
 import org.mapstruct.ap.internal.model.source.Method;
 import org.mapstruct.ap.internal.model.source.PropertyEntry;
@@ -78,6 +79,7 @@ public class BeanMappingMethod extends MappingMethod {
     private final boolean mapNullToDefault;
     private final Type resultType;
     private final NestedTargetObjects nestedTargetObjects;
+    private final boolean overridden;
 
     public static class Builder {
 
@@ -193,6 +195,11 @@ public class BeanMappingMethod extends MappingMethod {
             List<LifecycleCallbackMethodReference> afterMappingMethods =
                 LifecycleCallbackFactory.afterMappingMethods( method, selectionParameters, ctx );
 
+            List<ForgedMethod> allForgedMethods = new ArrayList<ForgedMethod>();
+            for (PropertyMapping propertyMapping : propertyMappings) {
+                allForgedMethods.addAll(propertyMapping.getForgedMethods());
+            }
+
             return new BeanMappingMethod(
                 method,
                 propertyMappings,
@@ -202,7 +209,8 @@ public class BeanMappingMethod extends MappingMethod {
                 existingVariableNames,
                 beforeMappingMethods,
                 afterMappingMethods,
-                nestedTargetObjects
+                nestedTargetObjects,
+                allForgedMethods
             );
         }
 
@@ -559,8 +567,9 @@ public class BeanMappingMethod extends MappingMethod {
                               Collection<String> existingVariableNames,
                               List<LifecycleCallbackMethodReference> beforeMappingReferences,
                               List<LifecycleCallbackMethodReference> afterMappingReferences,
-                              NestedTargetObjects nestedTargetObjects ) {
-        super( method, existingVariableNames, beforeMappingReferences, afterMappingReferences );
+                              NestedTargetObjects nestedTargetObjects,
+                              List<ForgedMethod> allForgedMethods) {
+        super( method, existingVariableNames, beforeMappingReferences, afterMappingReferences, allForgedMethods );
         this.propertyMappings = propertyMappings;
 
         // intialize constant mappings as all mappings, but take out the ones that can be contributed to a
@@ -581,6 +590,7 @@ public class BeanMappingMethod extends MappingMethod {
         this.mapNullToDefault = mapNullToDefault;
         this.resultType = resultType;
         this.nestedTargetObjects = nestedTargetObjects.init( this.getResultName() );
+        this.overridden = method.overridesMethod();
     }
 
     public List<PropertyMapping> getPropertyMappings() {
@@ -605,6 +615,10 @@ public class BeanMappingMethod extends MappingMethod {
 
     public boolean isMapNullToDefault() {
         return mapNullToDefault;
+    }
+
+    public boolean isOverridden() {
+        return overridden;
     }
 
     @Override
