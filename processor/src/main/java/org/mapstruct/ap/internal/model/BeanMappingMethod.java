@@ -49,6 +49,7 @@ import org.mapstruct.ap.internal.model.common.Type;
 import org.mapstruct.ap.internal.model.dependency.GraphAnalyzer;
 import org.mapstruct.ap.internal.model.dependency.GraphAnalyzer.GraphAnalyzerBuilder;
 import org.mapstruct.ap.internal.model.source.Mapping;
+import org.mapstruct.ap.internal.model.source.Method;
 import org.mapstruct.ap.internal.model.source.PropertyEntry;
 import org.mapstruct.ap.internal.model.source.SelectionParameters;
 import org.mapstruct.ap.internal.model.source.SourceMethod;
@@ -81,7 +82,7 @@ public class BeanMappingMethod extends MappingMethod {
     public static class Builder {
 
         private MappingBuilderContext ctx;
-        private SourceMethod method;
+        private Method method;
         private Map<String, ExecutableElement> unprocessedTargetProperties;
         private Set<String> targetProperties;
         private final List<PropertyMapping> propertyMappings = new ArrayList<PropertyMapping>();
@@ -90,6 +91,8 @@ public class BeanMappingMethod extends MappingMethod {
         private SelectionParameters selectionParameters;
         private final Set<String> existingVariableNames = new HashSet<String>();
         private NestedTargetObjects nestedTargetObjects;
+        private Map<String, List<Mapping>> methodMappings;
+        private SingleMappingByTargetPropertyNameFunction singleMapping;
 
         public Builder mappingContext(MappingBuilderContext mappingContext) {
             this.ctx = mappingContext;
@@ -97,17 +100,28 @@ public class BeanMappingMethod extends MappingMethod {
         }
 
         public Builder souceMethod(SourceMethod sourceMethod) {
+            singleMapping = new SourceMethodSingleMapping(sourceMethod);
+            return setupMethodWithMapping(sourceMethod, sourceMethod.getMappingOptions().getMappings());
+        }
+
+        public Builder forgedMethod(Method sourceMethod) {
+            singleMapping = new EmptySingleMapping();
+            return setupMethodWithMapping(sourceMethod, Collections.<String, List<Mapping>>emptyMap());
+        }
+
+        private Builder setupMethodWithMapping(Method sourceMethod, Map<String, List<Mapping>> mappings) {
             this.method = sourceMethod;
+            this.methodMappings = mappings;
             CollectionMappingStrategyPrism cms = sourceMethod.getMapperConfiguration().getCollectionMappingStrategy();
             Map<String, ExecutableElement> accessors = method.getResultType().getPropertyWriteAccessors( cms );
             this.targetProperties = accessors.keySet();
 
             this.nestedTargetObjects = new NestedTargetObjects.Builder()
-                .existingVariableNames( existingVariableNames )
-                .mappings( method.getMappingOptions().getMappings() )
-                .mappingBuilderContext( ctx )
-                .sourceMethod( method )
-                .build();
+                    .existingVariableNames( existingVariableNames )
+                    .mappings(mappings)
+                    .mappingBuilderContext( ctx )
+                    .sourceMethod( method )
+                    .build();
 
             this.unprocessedTargetProperties = new LinkedHashMap<String, ExecutableElement>( accessors );
             for ( Parameter sourceParameter : method.getSourceParameters() ) {
@@ -244,7 +258,7 @@ public class BeanMappingMethod extends MappingMethod {
             boolean errorOccurred = false;
             Set<String> handledTargets = new HashSet<String>();
 
-            for ( Map.Entry<String, List<Mapping>> entry : method.getMappingOptions().getMappings().entrySet() ) {
+            for ( Map.Entry<String, List<Mapping>> entry :methodMappings.entrySet() ) {
                 for ( Mapping mapping : entry.getValue() ) {
 
                     PropertyMapping propertyMapping = null;
@@ -411,7 +425,7 @@ public class BeanMappingMethod extends MappingMethod {
                             sourceParameter.getType().getPropertyPresenceCheckers().get( targetPropertyName );
 
                         if ( sourceReadAccessor != null ) {
-                            Mapping mapping = method.getSingleMappingByTargetPropertyName( targetProperty.getKey() );
+                            Mapping mapping = singleMapping.getSingleMappingByTargetPropertyName( targetProperty.getKey() );
                             DeclaredType declaredSourceType = (DeclaredType) sourceParameter.getType().getTypeMirror();
 
                             SourceReference sourceRef = new SourceReference.BuilderFromProperty()
@@ -476,7 +490,7 @@ public class BeanMappingMethod extends MappingMethod {
 
                     Parameter sourceParameter = sourceParameters.next();
                     if ( sourceParameter.getName().equals( targetProperty.getKey() ) ) {
-                        Mapping mapping = method.getSingleMappingByTargetPropertyName( targetProperty.getKey() );
+                        Mapping mapping = singleMapping.getSingleMappingByTargetPropertyName( targetProperty.getKey() );
 
                         SourceReference sourceRef = new SourceReference.BuilderFromProperty()
                             .sourceParameter( sourceParameter )
@@ -537,7 +551,7 @@ public class BeanMappingMethod extends MappingMethod {
         }
     }
 
-    private BeanMappingMethod(SourceMethod method,
+    private BeanMappingMethod(Method method,
                               List<PropertyMapping> propertyMappings,
                               MethodReference factoryMethod,
                               boolean mapNullToDefault,
@@ -663,7 +677,7 @@ public class BeanMappingMethod extends MappingMethod {
             private Map<String, List<Mapping>> mappings;
             private Set<String> existingVariableNames;
             private MappingBuilderContext ctx;
-            private SourceMethod method;
+            private Method method;
 
             private Builder mappings(Map<String, List<Mapping>> mappings) {
                 this.mappings = mappings;
@@ -680,7 +694,7 @@ public class BeanMappingMethod extends MappingMethod {
                 return this;
             }
 
-            private Builder sourceMethod(SourceMethod method) {
+            private Builder sourceMethod(Method method) {
                 this.method = method;
                 return this;
             }
@@ -751,7 +765,7 @@ public class BeanMappingMethod extends MappingMethod {
         /**
          * returns a local vaRriable name when relevant (so when not the 'parameter' targetBean should be used)
          *
-         * @param targefetRef
+         * @param targetRef
          * @return generated local variable name
          */
         private String getLocalVariableName(TargetReference targetRef) {
@@ -773,6 +787,33 @@ public class BeanMappingMethod extends MappingMethod {
         }
 
     }
+
+    private interface SingleMappingByTargetPropertyNameFunction {
+        Mapping getSingleMappingByTargetPropertyName(String targetPropertyName);
+    }
+
+    private static class EmptySingleMapping implements SingleMappingByTargetPropertyNameFunction {
+
+        @Override
+        public Mapping getSingleMappingByTargetPropertyName(String targetPropertyName) {
+            return null;
+        }
+    }
+
+    private static class SourceMethodSingleMapping implements SingleMappingByTargetPropertyNameFunction {
+
+        private final SourceMethod sourceMethod;
+
+        private SourceMethodSingleMapping(SourceMethod sourceMethod) {
+            this.sourceMethod = sourceMethod;
+        }
+
+        @Override
+        public Mapping getSingleMappingByTargetPropertyName(String targetPropertyName) {
+            return sourceMethod.getSingleMappingByTargetPropertyName(targetPropertyName);
+        }
+    }
+
 
 }
 

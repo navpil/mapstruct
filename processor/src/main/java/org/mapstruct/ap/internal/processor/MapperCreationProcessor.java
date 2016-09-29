@@ -23,6 +23,7 @@ import static org.mapstruct.ap.internal.util.Collections.first;
 import static org.mapstruct.ap.internal.util.Collections.join;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.SortedSet;
@@ -47,11 +48,15 @@ import org.mapstruct.ap.internal.model.Mapper;
 import org.mapstruct.ap.internal.model.MapperReference;
 import org.mapstruct.ap.internal.model.MappingBuilderContext;
 import org.mapstruct.ap.internal.model.MappingMethod;
+import org.mapstruct.ap.internal.model.MethodReference;
+import org.mapstruct.ap.internal.model.PropertyMapping;
 import org.mapstruct.ap.internal.model.ValueMappingMethod;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.mapstruct.ap.internal.model.common.TypeFactory;
+import org.mapstruct.ap.internal.model.source.ForgedMethod;
 import org.mapstruct.ap.internal.model.source.FormattingParameters;
 import org.mapstruct.ap.internal.model.source.MappingOptions;
+import org.mapstruct.ap.internal.model.source.Method;
 import org.mapstruct.ap.internal.model.source.SelectionParameters;
 import org.mapstruct.ap.internal.model.source.SourceMethod;
 import org.mapstruct.ap.internal.option.Options;
@@ -106,11 +111,13 @@ public class MapperCreationProcessor implements ModelElementProcessor<List<Sourc
                 elementUtils,
                 typeUtils,
                 typeFactory,
-                sourceModel,
+                new ArrayList<Method>(sourceModel),
                 mapperReferences
             ),
             mapperTypeElement,
-            sourceModel,
+                //sourceModel is passed only to fetch the after/before mapping methods in lifecycleCallbackFactory;
+                //Consider removing those methods directly into MappingBuilderContext.
+            Collections.unmodifiableList(sourceModel),
             mapperReferences
         );
         this.mappingContext = ctx;
@@ -143,7 +150,7 @@ public class MapperCreationProcessor implements ModelElementProcessor<List<Sourc
 
     private Mapper getMapper(TypeElement element, MapperConfiguration mapperConfig, List<SourceMethod> methods) {
         List<MapperReference> mapperReferences = mappingContext.getMapperReferences();
-        List<MappingMethod> mappingMethods = getMappingMethods( mapperConfig, methods );
+        List<MappingMethod> mappingMethods = getAllMappingMethods( mapperConfig, methods );
         mappingMethods.addAll( mappingContext.getUsedVirtualMappings() );
         mappingMethods.addAll( mappingContext.getMappingsToGenerate() );
 
@@ -250,6 +257,60 @@ public class MapperCreationProcessor implements ModelElementProcessor<List<Sourc
         }
 
         return extraImports;
+    }
+
+    //TODO: dmp 29-09-2016 use this method instead of getMappingMethods()
+    private List<MappingMethod> getAllMappingMethods(MapperConfiguration mapperConfig, List<SourceMethod> methods) {
+        List<MappingMethod> mappingMethods = getMappingMethods(mapperConfig, methods);
+        List<ForgedMethod> forgedMethods = collectAllForgedMethods(mappingMethods);
+
+        while(!forgedMethods.isEmpty()) {
+            List<MappingMethod> mappingMethodsFromForged = createBeanMapping(forgedMethods);
+            forgedMethods = collectAllForgedMethods(mappingMethods);
+            mappingMethods.addAll(mappingMethodsFromForged);
+        }
+
+        return mappingMethods;
+    }
+
+    private List<MappingMethod> createBeanMapping(List<ForgedMethod> forgedMethods) {
+        List<MappingMethod> mappingMethods = new ArrayList<MappingMethod>();
+
+        for (ForgedMethod method : forgedMethods) {
+
+            BeanMappingMethod.Builder builder = new BeanMappingMethod.Builder();
+            BeanMappingMethod beanMappingMethod = builder
+                    .mappingContext( mappingContext )
+                    .forgedMethod( method )
+                    .build();
+
+            if ( beanMappingMethod != null ) {
+                boolean hasFactoryMethod = beanMappingMethod.getFactoryMethod() != null;
+                mappingMethods.add( beanMappingMethod );
+                if ( !hasFactoryMethod ) {
+                    // A factory method  is allowed to return an interface type and hence, the generated
+                    // implementation as well. The check below must only be executed if there's no factory
+                    // method that could be responsible.
+                    reportErrorIfNoImplementationTypeIsRegisteredForInterfaceReturnType( method );
+                }
+            }
+        }
+
+        return mappingMethods;
+    }
+
+    private List<ForgedMethod> collectAllForgedMethods(List<MappingMethod> mappingMethods) {
+        ArrayList<ForgedMethod> forgedMethods = new ArrayList<ForgedMethod>();
+        for (MappingMethod mappingMethod : mappingMethods) {
+            if(mappingMethod instanceof BeanMappingMethod) {
+                for (PropertyMapping propertyMapping : ((BeanMappingMethod) mappingMethod).getPropertyMappings()) {
+                    if(propertyMapping.getForgedMethod() != null) {
+                        forgedMethods.add(propertyMapping.getForgedMethod());
+                    }
+                }
+            }
+        }
+        return forgedMethods;
     }
 
     private List<MappingMethod> getMappingMethods(MapperConfiguration mapperConfig, List<SourceMethod> methods) {
@@ -435,7 +496,7 @@ public class MapperCreationProcessor implements ModelElementProcessor<List<Sourc
         mappingOptions.markAsFullyInitialized();
     }
 
-    private void reportErrorIfNoImplementationTypeIsRegisteredForInterfaceReturnType(SourceMethod method) {
+    private void reportErrorIfNoImplementationTypeIsRegisteredForInterfaceReturnType(Method method) {
         if ( method.getReturnType().getTypeMirror().getKind() != TypeKind.VOID &&
             method.getReturnType().isInterface() &&
             method.getReturnType().getImplementationType() == null ) {

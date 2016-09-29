@@ -51,7 +51,7 @@ import org.mapstruct.ap.internal.model.common.Type;
 import org.mapstruct.ap.internal.model.source.ForgedMethod;
 import org.mapstruct.ap.internal.model.source.FormattingParameters;
 import org.mapstruct.ap.internal.model.source.SelectionParameters;
-import org.mapstruct.ap.internal.model.source.SourceMethod;
+import org.mapstruct.ap.internal.model.source.Method;
 import org.mapstruct.ap.internal.model.source.PropertyEntry;
 import org.mapstruct.ap.internal.model.source.SourceReference;
 import static org.mapstruct.ap.internal.util.Collections.first;
@@ -80,6 +80,11 @@ public class PropertyMapping extends ModelElement {
     private final Assignment assignment;
     private final List<String> dependsOn;
     private final Assignment defaultValueAssignment;
+    private ForgedMethod forgedMethod;
+
+    public ForgedMethod getForgedMethod() {
+        return forgedMethod;
+    }
 
     private enum TargetWriteAccessorType {
         GETTER,
@@ -103,7 +108,7 @@ public class PropertyMapping extends ModelElement {
     private static class MappingBuilderBase<T extends MappingBuilderBase<T>> {
 
         protected MappingBuilderContext ctx;
-        protected SourceMethod method;
+        protected Method method;
 
         protected ExecutableElement targetWriteAccessor;
         protected TargetWriteAccessorType targetWriteAccessorType;
@@ -120,7 +125,7 @@ public class PropertyMapping extends ModelElement {
             return (T) this;
         }
 
-        public T sourceMethod(SourceMethod sourceMethod) {
+        public T sourceMethod(Method sourceMethod) {
             this.method = sourceMethod;
             return (T) this;
         }
@@ -191,6 +196,7 @@ public class PropertyMapping extends ModelElement {
         private SourceReference sourceReference;
         private FormattingParameters formattingParameters;
         private SelectionParameters selectionParameters;
+        private ForgedMethod forgedMethod;
 
         public PropertyMappingBuilder sourceReference(SourceReference sourceReference) {
             this.sourceReference = sourceReference;
@@ -256,6 +262,9 @@ public class PropertyMapping extends ModelElement {
                 else if ( sourceType.isMapType() && targetType.isMapType() ) {
                     assignment = forgeMapMapping( sourceType, targetType, sourceRHS, method.getExecutable() );
                 }
+                else {
+                    assignment = forgeMapping(sourceRHS);
+                }
             }
 
             if ( assignment != null ) {
@@ -290,7 +299,8 @@ public class PropertyMapping extends ModelElement {
                 localTargetVarName,
                 assignment,
                 dependsOn,
-                getDefaultValueAssignment()
+                getDefaultValueAssignment(),
+                forgedMethod
             );
         }
 
@@ -678,6 +688,18 @@ public class PropertyMapping extends ModelElement {
             return assignment;
         }
 
+        private Assignment forgeMapping(SourceRHS sourceRHS) {
+
+            Type sourceType = getSourceType();
+            String name = getName( sourceType, targetType );
+            forgedMethod = new ForgedMethod(name, sourceType, targetType, method.getMapperConfiguration(), method.getExecutable());
+
+            Assignment assignment = new MethodReference(forgedMethod, null, targetType);
+            assignment.setAssignment(sourceRHS);
+
+            return assignment;
+        }
+
         private String getName(Type sourceType, Type targetType) {
             String fromName = getName( sourceType );
             String toName = getName( targetType );
@@ -857,13 +879,13 @@ public class PropertyMapping extends ModelElement {
                             Type targetType, String localTargetVarName, Assignment propertyAssignment,
                             List<String> dependsOn, Assignment defaultValueAssignment ) {
         this( name, null, targetWriteAccessorName, targetReadAccessorName,
-                        targetType, localTargetVarName, propertyAssignment, dependsOn, defaultValueAssignment );
+                        targetType, localTargetVarName, propertyAssignment, dependsOn, defaultValueAssignment, null );
     }
 
     private PropertyMapping(String name, String sourceBeanName, String targetWriteAccessorName,
                             String targetReadAccessorName, Type targetType, String localTargetVarName,
                             Assignment assignment,
-                            List<String> dependsOn, Assignment defaultValueAssignment ) {
+                            List<String> dependsOn, Assignment defaultValueAssignment, ForgedMethod forgedMethod ) {
         this.name = name;
         this.sourceBeanName = sourceBeanName;
         this.targetWriteAccessorName = targetWriteAccessorName;
@@ -874,6 +896,7 @@ public class PropertyMapping extends ModelElement {
         this.assignment = assignment;
         this.dependsOn = dependsOn != null ? dependsOn : Collections.<String>emptyList();
         this.defaultValueAssignment = defaultValueAssignment;
+        this.forgedMethod = forgedMethod;
     }
 
     /**
