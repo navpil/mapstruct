@@ -50,9 +50,6 @@ public class WheelDto {
 
     @Override
     public String toString() {
-        return "WheelDto{" +
-                "front=" + front +
-                ", right=" + right +
-                '}';
+        return "Wheel{" + (front ? "front" : "rear") + ";" + (right ? "right" : "left") +'}';
     }
 }

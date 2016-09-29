@@ -38,12 +38,7 @@ public class NestedSimpleBeansMappingClassic {
     @Test
     public void shouldMapNestedBeans() {
 
-        User user = new User("John", new Car("Chrysler", 1955, Arrays.asList(
-                new Wheel().front().left(),
-                new Wheel().front().right(),
-                new Wheel().rear().left(),
-                new Wheel().rear().right())),
-                new House("Black", 1834, new Roof(1)));
+        User user = TestData.createUser();
 
         UserDto classicMapping = UserDtoMapperClassic.INSTANCE.userToUserDto(user);
 

@@ -23,12 +23,10 @@ import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
-@Mapper(smartMapping = true)
+@Mapper
 public interface UserDtoMapperSmart {
 
     public static UserDtoMapperSmart INSTANCE = Mappers.getMapper( UserDtoMapperSmart.class );
 
     abstract UserDto userToUserDto(User user);
-
-//    WheelDto mapWheel(Wheel wheel);
 }
