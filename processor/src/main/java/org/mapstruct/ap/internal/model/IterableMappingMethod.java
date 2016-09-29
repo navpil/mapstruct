@@ -20,6 +20,7 @@ package org.mapstruct.ap.internal.model;
 
 import static org.mapstruct.ap.internal.util.Collections.first;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -202,7 +203,8 @@ public class IterableMappingMethod extends MappingMethod {
                                   List<LifecycleCallbackMethodReference> beforeMappingReferences,
                                   List<LifecycleCallbackMethodReference> afterMappingReferences,
                                   SelectionParameters selectionParameters, ForgedMethod forgedMethod) {
-        super( method, beforeMappingReferences, afterMappingReferences, java.util.Collections.singletonList(forgedMethod));
+        super( method, beforeMappingReferences, afterMappingReferences,
+                forgedMethod == null ? Collections.<ForgedMethod>emptyList() : java.util.Collections.singletonList(forgedMethod));
         this.elementAssignment = parameterAssignment;
         this.factoryMethod = factoryMethod;
         this.overridden = method.overridesMethod();
