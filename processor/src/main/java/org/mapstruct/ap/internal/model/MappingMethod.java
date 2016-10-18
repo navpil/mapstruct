@@ -67,8 +67,9 @@ public abstract class MappingMethod extends ModelElement {
     protected MappingMethod(Method method, Collection<String> existingVariableNames,
                             List<LifecycleCallbackMethodReference> beforeMappingReferences,
                             List<LifecycleCallbackMethodReference> afterMappingReferences) {
-        this(method, existingVariableNames, beforeMappingReferences, afterMappingReferences,
-                Collections.<ForgedMethod>emptyList());
+        this( method, existingVariableNames, beforeMappingReferences, afterMappingReferences,
+            Collections.<ForgedMethod>emptyList()
+        );
     }
 
     protected MappingMethod(Method method, Collection<String> existingVariableNames,
@@ -99,7 +100,8 @@ public abstract class MappingMethod extends ModelElement {
     }
 
     protected MappingMethod(Method method, List<LifecycleCallbackMethodReference> beforeMappingReferences,
-                            List<LifecycleCallbackMethodReference> afterMappingReferences, List<ForgedMethod> forgedMethods) {
+                            List<LifecycleCallbackMethodReference> afterMappingReferences,
+                            List<ForgedMethod> forgedMethods) {
         this( method, method.getParameterNames(), beforeMappingReferences, afterMappingReferences, forgedMethods );
     }
 
@@ -200,7 +202,7 @@ public abstract class MappingMethod extends ModelElement {
     }
 
     private List<LifecycleCallbackMethodReference> filterMappingTarget(List<LifecycleCallbackMethodReference> methods,
-                                                                         boolean mustHaveMappingTargetParameter) {
+                                                                       boolean mustHaveMappingTargetParameter) {
         if ( methods == null ) {
             return null;
         }

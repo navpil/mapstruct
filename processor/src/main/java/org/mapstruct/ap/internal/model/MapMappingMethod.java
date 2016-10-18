@@ -30,11 +30,11 @@ import org.mapstruct.ap.internal.model.assignment.LocalVarWrapper;
 import org.mapstruct.ap.internal.model.common.Parameter;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.mapstruct.ap.internal.model.source.ForgedMethod;
+import org.mapstruct.ap.internal.model.source.ForgedMethodHistory;
 import org.mapstruct.ap.internal.model.source.FormattingParameters;
 import org.mapstruct.ap.internal.model.source.Method;
 import org.mapstruct.ap.internal.model.source.SelectionParameters;
 import org.mapstruct.ap.internal.prism.NullValueMappingStrategyPrism;
-import org.mapstruct.ap.internal.util.Message;
 import org.mapstruct.ap.internal.util.Strings;
 
 /**
@@ -107,7 +107,7 @@ public class MapMappingMethod extends MappingMethod {
             Type keySourceType = sourceTypeParams.get( 0 ).getTypeBound();
             Type keyTargetType = resultTypeParams.get( 0 ).getTypeBound();
 
-            SourceRHS keySourceRHS = new SourceRHS("entry.getKey()", keySourceType);
+            SourceRHS keySourceRHS = new SourceRHS( "entry.getKey()", keySourceType );
             Assignment keyAssignment = ctx.getMappingResolver().getTargetAssignment(
                 method,
                 "map key",
@@ -116,13 +116,13 @@ public class MapMappingMethod extends MappingMethod {
                 null, // there is no targetPropertyName
                 keyFormattingParameters,
                 keySelectionParameters,
-                    keySourceRHS,
+                keySourceRHS,
                 false
             );
 
             if ( keyAssignment == null ) {
 
-                keyAssignment = forgeMapping(keySourceRHS, keySourceType, keyTargetType);
+                keyAssignment = forgeMapping( keySourceRHS, keySourceType, keyTargetType );
 //                if ( method instanceof ForgedMethod ) {
 //                    // leave messaging to calling property mapping
 //                    return null;
@@ -137,7 +137,7 @@ public class MapMappingMethod extends MappingMethod {
             Type valueSourceType = sourceTypeParams.get( 1 ).getTypeBound();
             Type valueTargetType = resultTypeParams.get( 1 ).getTypeBound();
 
-            SourceRHS valueSourceRHS = new SourceRHS("entry.getValue()", valueSourceType);
+            SourceRHS valueSourceRHS = new SourceRHS( "entry.getValue()", valueSourceType );
             Assignment valueAssignment = ctx.getMappingResolver().getTargetAssignment(
                 method,
                 "map value",
@@ -146,7 +146,7 @@ public class MapMappingMethod extends MappingMethod {
                 null, // there is no targetPropertyName
                 valueFormattingParameters,
                 valueSelectionParameters,
-                    valueSourceRHS,
+                valueSourceRHS,
                 false
             );
 
@@ -162,7 +162,7 @@ public class MapMappingMethod extends MappingMethod {
 
             if ( valueAssignment == null ) {
 
-                valueAssignment = forgeMapping(valueSourceRHS, valueSourceType, valueTargetType);
+                valueAssignment = forgeMapping( valueSourceRHS, valueSourceType, valueTargetType );
 
 //                if ( method instanceof ForgedMethod ) {
 //                    // leave messaging to calling property mapping
@@ -177,7 +177,7 @@ public class MapMappingMethod extends MappingMethod {
             // mapNullToDefault
             boolean mapNullToDefault = false;
             if ( method.getMapperConfiguration() != null ) {
-                 mapNullToDefault = method.getMapperConfiguration().isMapToDefault( nullValueMappingStrategy );
+                mapNullToDefault = method.getMapperConfiguration().isMapToDefault( nullValueMappingStrategy );
             }
 
             MethodReference factoryMethod = null;
@@ -201,7 +201,7 @@ public class MapMappingMethod extends MappingMethod {
                 mapNullToDefault,
                 beforeMappingMethods,
                 afterMappingMethods,
-                    forgedMethods
+                forgedMethods
             );
         }
 
@@ -209,12 +209,23 @@ public class MapMappingMethod extends MappingMethod {
         private Assignment forgeMapping(SourceRHS sourceRHS, Type sourceType, Type targetType) {
 
             String name = getName( sourceType, targetType );
-            ForgedMethod forgedMethod = new ForgedMethod(name, sourceType, targetType, method.getMapperConfiguration(), method.getExecutable());
+            ForgedMethodHistory history = null;
+            if ( method instanceof ForgedMethod ) {
+                history = ( (ForgedMethod) method ).getHistory();
+            }
+            ForgedMethod forgedMethod = new ForgedMethod(
+                name,
+                sourceType,
+                targetType,
+                method.getMapperConfiguration(),
+                method.getExecutable(),
+                history
+            );
 
-            Assignment assignment = new MethodReference(forgedMethod, null, targetType);
-            assignment.setAssignment(sourceRHS);
+            Assignment assignment = new MethodReference( forgedMethod, null, targetType );
+            assignment.setAssignment( sourceRHS );
 
-            forgedMethods.add(forgedMethod);
+            forgedMethods.add( forgedMethod );
 
             return assignment;
         }
@@ -239,7 +250,8 @@ public class MapMappingMethod extends MappingMethod {
     private MapMappingMethod(Method method, Assignment keyAssignment, Assignment valueAssignment,
                              MethodReference factoryMethod, boolean mapNullToDefault,
                              List<LifecycleCallbackMethodReference> beforeMappingReferences,
-                             List<LifecycleCallbackMethodReference> afterMappingReferences, List<ForgedMethod> forgedMethods) {
+                             List<LifecycleCallbackMethodReference> afterMappingReferences,
+                             List<ForgedMethod> forgedMethods) {
         super( method, beforeMappingReferences, afterMappingReferences, forgedMethods );
 
         this.keyAssignment = keyAssignment;

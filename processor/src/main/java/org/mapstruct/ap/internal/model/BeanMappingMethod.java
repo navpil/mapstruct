@@ -49,6 +49,7 @@ import org.mapstruct.ap.internal.model.common.Type;
 import org.mapstruct.ap.internal.model.dependency.GraphAnalyzer;
 import org.mapstruct.ap.internal.model.dependency.GraphAnalyzer.GraphAnalyzerBuilder;
 import org.mapstruct.ap.internal.model.source.ForgedMethod;
+import org.mapstruct.ap.internal.model.source.ForgedMethodHistory;
 import org.mapstruct.ap.internal.model.source.Mapping;
 import org.mapstruct.ap.internal.model.source.Method;
 import org.mapstruct.ap.internal.model.source.PropertyEntry;
@@ -102,13 +103,13 @@ public class BeanMappingMethod extends MappingMethod {
         }
 
         public Builder souceMethod(SourceMethod sourceMethod) {
-            singleMapping = new SourceMethodSingleMapping(sourceMethod);
-            return setupMethodWithMapping(sourceMethod, sourceMethod.getMappingOptions().getMappings());
+            singleMapping = new SourceMethodSingleMapping( sourceMethod );
+            return setupMethodWithMapping( sourceMethod, sourceMethod.getMappingOptions().getMappings() );
         }
 
         public Builder forgedMethod(Method sourceMethod) {
             singleMapping = new EmptySingleMapping();
-            return setupMethodWithMapping(sourceMethod, Collections.<String, List<Mapping>>emptyMap());
+            return setupMethodWithMapping( sourceMethod, Collections.<String, List<Mapping>>emptyMap() );
         }
 
         private Builder setupMethodWithMapping(Method sourceMethod, Map<String, List<Mapping>> mappings) {
@@ -119,11 +120,11 @@ public class BeanMappingMethod extends MappingMethod {
             this.targetProperties = accessors.keySet();
 
             this.nestedTargetObjects = new NestedTargetObjects.Builder()
-                    .existingVariableNames( existingVariableNames )
-                    .mappings(mappings)
-                    .mappingBuilderContext( ctx )
-                    .sourceMethod( method )
-                    .build();
+                .existingVariableNames( existingVariableNames )
+                .mappings( mappings )
+                .mappingBuilderContext( ctx )
+                .sourceMethod( method )
+                .build();
 
             this.unprocessedTargetProperties = new LinkedHashMap<String, ExecutableElement>( accessors );
             for ( Parameter sourceParameter : method.getSourceParameters() ) {
@@ -170,7 +171,8 @@ public class BeanMappingMethod extends MappingMethod {
                 factoryMethod = ctx.getMappingResolver().getFactoryMethod(
                     method,
                     method.getResultType(),
-                    selectionParameters );
+                    selectionParameters
+                );
             }
 
             // if there's no factory method, try the resultType in the @BeanMapping
@@ -196,8 +198,8 @@ public class BeanMappingMethod extends MappingMethod {
                 LifecycleCallbackFactory.afterMappingMethods( method, selectionParameters, ctx );
 
             List<ForgedMethod> allForgedMethods = new ArrayList<ForgedMethod>();
-            for (PropertyMapping propertyMapping : propertyMappings) {
-                allForgedMethods.addAll(propertyMapping.getForgedMethods());
+            for ( PropertyMapping propertyMapping : propertyMappings ) {
+                allForgedMethods.addAll( propertyMapping.getForgedMethods() );
             }
 
             return new BeanMappingMethod(
@@ -266,7 +268,7 @@ public class BeanMappingMethod extends MappingMethod {
             boolean errorOccurred = false;
             Set<String> handledTargets = new HashSet<String>();
 
-            for ( Map.Entry<String, List<Mapping>> entry :methodMappings.entrySet() ) {
+            for ( Map.Entry<String, List<Mapping>> entry : methodMappings.entrySet() ) {
                 for ( Mapping mapping : entry.getValue() ) {
 
                     PropertyMapping propertyMapping = null;
@@ -277,10 +279,11 @@ public class BeanMappingMethod extends MappingMethod {
                         resultPropertyName = first( targetRef.getPropertyEntries() ).getName();
                     }
 
-                    if (!unprocessedTargetProperties.containsKey( resultPropertyName ) ) {
-                         boolean hasReadAccessor =
+                    if ( !unprocessedTargetProperties.containsKey( resultPropertyName ) ) {
+                        boolean hasReadAccessor =
                             method.getResultType().getPropertyReadAccessors().containsKey( mapping.getTargetName() );
-                        ctx.getMessager().printMessage( method.getExecutable(),
+                        ctx.getMessager().printMessage(
+                            method.getExecutable(),
                             mapping.getMirror(),
                             mapping.getSourceAnnotationValue(),
                             hasReadAccessor ? Message.BEANMAPPING_PROPERTY_HAS_NO_WRITE_ACCESSOR_IN_RESULTTYPE :
@@ -433,7 +436,8 @@ public class BeanMappingMethod extends MappingMethod {
                             sourceParameter.getType().getPropertyPresenceCheckers().get( targetPropertyName );
 
                         if ( sourceReadAccessor != null ) {
-                            Mapping mapping = singleMapping.getSingleMappingByTargetPropertyName( targetProperty.getKey() );
+                            Mapping mapping = singleMapping.getSingleMappingByTargetPropertyName(
+                                targetProperty.getKey() );
                             DeclaredType declaredSourceType = (DeclaredType) sourceParameter.getType().getTypeMirror();
 
                             SourceReference sourceRef = new SourceReference.BuilderFromProperty()
@@ -526,7 +530,7 @@ public class BeanMappingMethod extends MappingMethod {
             }
         }
 
-        private ExecutableElement getTargetPropertyReadAccessor( String propertyName ) {
+        private ExecutableElement getTargetPropertyReadAccessor(String propertyName) {
             return method.getResultType().getPropertyReadAccessors().get( propertyName );
         }
 
@@ -541,7 +545,43 @@ public class BeanMappingMethod extends MappingMethod {
             // fetch settings from element to implement
             ReportingPolicyPrism unmappedTargetPolicy = getUnmappedTargetPolicy();
 
-            if ( !unprocessedTargetProperties.isEmpty() && unmappedTargetPolicy.requiresReport() ) {
+            //we handle forged methods differently than the usual source ones. in
+            if ( method instanceof ForgedMethod ) {
+                if ( targetProperties.isEmpty() || !unprocessedTargetProperties.isEmpty() ) {
+
+                    ForgedMethod forgedMethod = (ForgedMethod) this.method;
+
+                    if ( forgedMethod.getHistory() == null ) {
+                        Type sourceType = this.method.getParameters().get( 0 ).getType();
+                        Type targetType = this.method.getReturnType();
+                        ctx.getMessager().printMessage(
+                            this.method.getExecutable(),
+                            Message.PROPERTYMAPPING_FORGED_MAPPING_NOT_FOUND,
+                            sourceType,
+                            targetType,
+                            targetType,
+                            sourceType
+                        );
+                    }
+                    else {
+                        ForgedMethodHistory history = forgedMethod.getHistory();
+                        while ( history.getPrevHistory() != null ) {
+                            history = history.getPrevHistory();
+                        }
+                        ctx.getMessager().printMessage(
+                            this.method.getExecutable(),
+                            Message.PROPERTYMAPPING_MAPPING_NOT_FOUND,
+                            history.getSourceElement(),
+                            history.getTargetType(),
+                            history.getTargetPropertyName(),
+                            history.getTargetType(),
+                            history.getSourceType()
+                        );
+                    }
+
+                }
+            }
+            else if ( !unprocessedTargetProperties.isEmpty() && unmappedTargetPolicy.requiresReport() ) {
 
                 Message msg = unmappedTargetPolicy.getDiagnosticKind() == Diagnostic.Kind.ERROR ?
                     Message.BEANMAPPING_UNMAPPED_TARGETS_ERROR : Message.BEANMAPPING_UNMAPPED_TARGETS_WARNING;
@@ -670,7 +710,7 @@ public class BeanMappingMethod extends MappingMethod {
     }
 
 
-    private static class NestedTargetObjects  {
+    private static class NestedTargetObjects {
 
         private final Set<LocalVariable> localVariables;
         private final Set<NestedLocalVariableAssignment> nestedAssignments;
@@ -712,6 +752,7 @@ public class BeanMappingMethod extends MappingMethod {
                 this.method = method;
                 return this;
             }
+
             private NestedTargetObjects build() {
 
 
@@ -770,7 +811,7 @@ public class BeanMappingMethod extends MappingMethod {
         }
 
         private NestedTargetObjects(Set<LocalVariable> localVariables, Map<String, String> localVariableNames,
-            Set<NestedLocalVariableAssignment> relations) {
+                                    Set<NestedLocalVariableAssignment> relations) {
             this.localVariables = localVariables;
             this.localVariableNames = localVariableNames;
             this.nestedAssignments = relations;
@@ -780,6 +821,7 @@ public class BeanMappingMethod extends MappingMethod {
          * returns a local vaRriable name when relevant (so when not the 'parameter' targetBean should be used)
          *
          * @param targetRef
+         *
          * @return generated local variable name
          */
         private String getLocalVariableName(TargetReference targetRef) {
@@ -791,7 +833,7 @@ public class BeanMappingMethod extends MappingMethod {
             return result;
         }
 
-        private NestedTargetObjects init( String targetBeanName ) {
+        private NestedTargetObjects init(String targetBeanName) {
             for ( NestedLocalVariableAssignment nestedAssignment : nestedAssignments ) {
                 if ( nestedAssignment.getTargetBean() == null ) {
                     nestedAssignment.setTargetBean( targetBeanName );
@@ -824,7 +866,7 @@ public class BeanMappingMethod extends MappingMethod {
 
         @Override
         public Mapping getSingleMappingByTargetPropertyName(String targetPropertyName) {
-            return sourceMethod.getSingleMappingByTargetPropertyName(targetPropertyName);
+            return sourceMethod.getSingleMappingByTargetPropertyName( targetPropertyName );
         }
     }
 
