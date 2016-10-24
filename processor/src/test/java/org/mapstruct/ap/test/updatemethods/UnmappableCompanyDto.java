@@ -16,17 +16,31 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.mapstruct.ap.test.selection.generics;
+package org.mapstruct.ap.test.updatemethods;
 
-public class ErroneousTarget6 {
+/**
+ *
+ * @author Dmytro Polovinkin
+ */
+public class UnmappableCompanyDto {
 
-    private WildCardSuperWrapper<TypeA> foo;
+    private String name;
+    private UnmappableDepartmentDto department;
 
-    public WildCardSuperWrapper<TypeA> getFoo() {
-        return foo;
+    public String getName() {
+        return name;
     }
 
-    public void setFoo(WildCardSuperWrapper<TypeA> foo) {
-        this.foo = foo;
+    public void setName(String name) {
+        this.name = name;
     }
+
+    public UnmappableDepartmentDto getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(UnmappableDepartmentDto department) {
+        this.department = department;
+    }
+
 }
