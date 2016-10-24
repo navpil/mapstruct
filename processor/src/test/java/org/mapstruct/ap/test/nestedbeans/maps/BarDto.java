@@ -16,33 +16,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.mapstruct.ap.test.nestedbeans;
+package org.mapstruct.ap.test.nestedbeans.maps;
 
+public class BarDto {
+    private String name;
 
-import java.util.Arrays;
-
-public class TestData {
-
-    private TestData() {
-
+    public String getName() {
+        return name;
     }
 
-    public static User createUser() {
-        return getOldUser();
-    }
-//
-//    private static User getNewUser() {
-//        return new User("John", new Car("Chrysler", 1955), new House("Black", 1834, new Roof(1)));
-//    }
-
-    private static User getOldUser() {
-        return new User( "John", new Car( "Chrysler", 1955, Arrays.asList(
-            new Wheel().front().left(),
-            new Wheel().front().right(),
-            new Wheel().rear().left(),
-            new Wheel().rear().right()
-        ) ),
-            new House( "Black", 1834, new Roof( 1 ) )
-        );
+    public void setName(String name) {
+        this.name = name;
     }
 }

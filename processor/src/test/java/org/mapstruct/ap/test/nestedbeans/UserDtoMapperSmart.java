@@ -21,12 +21,10 @@ package org.mapstruct.ap.test.nestedbeans;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
-import java.util.List;
-
 @Mapper
 public interface UserDtoMapperSmart {
 
-    public static UserDtoMapperSmart INSTANCE = Mappers.getMapper( UserDtoMapperSmart.class );
+    UserDtoMapperSmart INSTANCE = Mappers.getMapper( UserDtoMapperSmart.class );
 
-    abstract UserDto userToUserDto(User user);
+    UserDto userToUserDto(User user);
 }

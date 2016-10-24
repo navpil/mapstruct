@@ -16,33 +16,29 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.mapstruct.ap.test.nestedbeans;
+package org.mapstruct.ap.test.nestedbeans.multiplecollections;
 
+import java.util.List;
 
-import java.util.Arrays;
+import org.mapstruct.ap.test.nestedbeans.Car;
 
-public class TestData {
+public class Garage {
+    private List<Car> cars;
+    private List<Car> usedCars;
 
-    private TestData() {
-
+    public List<Car> getCars() {
+        return cars;
     }
 
-    public static User createUser() {
-        return getOldUser();
+    public void setCars(List<Car> cars) {
+        this.cars = cars;
     }
-//
-//    private static User getNewUser() {
-//        return new User("John", new Car("Chrysler", 1955), new House("Black", 1834, new Roof(1)));
-//    }
 
-    private static User getOldUser() {
-        return new User( "John", new Car( "Chrysler", 1955, Arrays.asList(
-            new Wheel().front().left(),
-            new Wheel().front().right(),
-            new Wheel().rear().left(),
-            new Wheel().rear().right()
-        ) ),
-            new House( "Black", 1834, new Roof( 1 ) )
-        );
+    public List<Car> getUsedCars() {
+        return usedCars;
+    }
+
+    public void setUsedCars(List<Car> usedCars) {
+        this.usedCars = usedCars;
     }
 }
