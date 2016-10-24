@@ -193,7 +193,8 @@ public class UpdateMethodsTest {
             @Diagnostic(type = ErroneousCompanyMapper1.class,
                 kind = javax.tools.Diagnostic.Kind.ERROR,
                 line = 36,
-                messageRegExp = "Can't map property \".*UnmappableDepartmentDto department\" to \".*DepartmentEntity department.")
+                messageRegExp = "Can't map property \".*UnmappableDepartmentDto department\" to \".*DepartmentEntity " +
+                    "department.")
         }
     )
     public void testShouldFailOnTwoNestedUpdateMethods() { }

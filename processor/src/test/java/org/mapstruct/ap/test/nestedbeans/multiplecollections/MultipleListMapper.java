@@ -27,4 +27,5 @@ public interface MultipleListMapper {
     MultipleListMapper INSTANCE = Mappers.getMapper( MultipleListMapper.class );
 
     GarageDto convert(Garage garage);
+
 }

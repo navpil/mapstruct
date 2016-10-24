@@ -27,4 +27,5 @@ public interface AutoMapMapper {
     AutoMapMapper INSTANCE = Mappers.getMapper( AutoMapMapper.class );
 
     Entity entityToDto(Dto dto);
+
 }

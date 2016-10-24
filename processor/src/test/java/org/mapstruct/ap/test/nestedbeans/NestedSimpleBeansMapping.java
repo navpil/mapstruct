@@ -49,6 +49,6 @@ public class NestedSimpleBeansMapping {
 
         assertThat( smartMapping ).isNotNull();
         assertThat( smartMapping ).isEqualTo( classicMapping );
-
     }
+
 }

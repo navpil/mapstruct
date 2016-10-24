@@ -41,4 +41,5 @@ public class Garage {
     public void setUsedCars(List<Car> usedCars) {
         this.usedCars = usedCars;
     }
+
 }

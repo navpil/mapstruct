@@ -42,4 +42,5 @@ public class GarageDto {
     public void setUsedCars(List<CarDto> usedCars) {
         this.usedCars = usedCars;
     }
+
 }

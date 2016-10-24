@@ -28,4 +28,5 @@ public class BarDto {
     public void setName(String name) {
         this.name = name;
     }
+
 }

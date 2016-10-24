@@ -39,4 +39,5 @@ public interface UserDtoMapperClassic {
     List<WheelDto> mapWheels(List<Wheel> wheels);
 
     WheelDto mapWheel(Wheel wheels);
+
 }

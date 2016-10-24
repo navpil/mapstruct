@@ -96,4 +96,5 @@ public class House {
             ", roof=" + roof +
             '}';
     }
+
 }

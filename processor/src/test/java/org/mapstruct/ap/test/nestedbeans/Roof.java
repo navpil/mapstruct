@@ -42,4 +42,5 @@ public class Roof {
             "color='" + color + '\'' +
             '}';
     }
+
 }

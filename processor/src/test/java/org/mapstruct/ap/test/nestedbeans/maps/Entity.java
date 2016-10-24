@@ -30,4 +30,5 @@ public class Entity {
     public void setMap(Map<Bar, Bar> map) {
         this.map = map;
     }
+
 }

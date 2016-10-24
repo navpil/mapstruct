@@ -76,4 +76,5 @@ public class WheelDto {
     public String toString() {
         return "Wheel{" + ( front ? "front" : "rear" ) + ";" + ( right ? "right" : "left" ) + '}';
     }
+
 }

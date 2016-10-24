@@ -56,4 +56,5 @@ public class ForgedMethodHistory {
     public ForgedMethodHistory getPrevHistory() {
         return prevHistory;
     }
+    
 }

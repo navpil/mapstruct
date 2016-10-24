@@ -30,4 +30,5 @@ public class Dto {
     public void setMap( Map<BarDto, BarDto> map) {
         this.map = map;
     }
+
 }

@@ -62,4 +62,5 @@ public class RoofDto {
             "color='" + color + '\'' +
             '}';
     }
+
 }

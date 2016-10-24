@@ -27,4 +27,5 @@ public interface UserDtoMapperSmart {
     UserDtoMapperSmart INSTANCE = Mappers.getMapper( UserDtoMapperSmart.class );
 
     UserDto userToUserDto(User user);
+
 }
