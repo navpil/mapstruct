@@ -27,14 +27,16 @@ public class ForgedMethodHistory {
     private final String targetPropertyName;
     private final Type targetType;
     private final Type sourceType;
+    private final boolean usePropertyNames;
 
     public ForgedMethodHistory(ForgedMethodHistory history, String sourceElement, String targetPropertyName,
-                               Type sourceType, Type targetType) {
+                               Type sourceType, Type targetType, boolean usePropertyNames) {
         prevHistory = history;
         this.sourceElement = sourceElement;
         this.targetPropertyName = targetPropertyName;
         this.sourceType = sourceType;
         this.targetType = targetType;
+        this.usePropertyNames = usePropertyNames;
     }
 
     public String getSourceElement() {
@@ -55,6 +57,31 @@ public class ForgedMethodHistory {
 
     public ForgedMethodHistory getPrevHistory() {
         return prevHistory;
+    }
+
+    public String getDottedSourceElement() {
+        if (prevHistory == null) {
+            return sourceElement;
+        } else {
+            if (usePropertyNames) {
+                return prevHistory.getDottedSourceElement() + "." + sourceElement;
+            } else {
+                return prevHistory.getDottedSourceElement();
+            }
+        }
+    }
+
+    public String getDottedTargetPropertyName() {
+        if (prevHistory == null) {
+            return targetPropertyName;
+        } else {
+            if (usePropertyNames) {
+                return prevHistory.getDottedTargetPropertyName() + "." + targetPropertyName;
+            } else {
+                return prevHistory.getDottedTargetPropertyName();
+            }
+
+        }
     }
 
 }

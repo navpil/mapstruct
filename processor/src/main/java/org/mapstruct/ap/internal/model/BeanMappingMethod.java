@@ -569,15 +569,12 @@ public class BeanMappingMethod extends MappingMethod {
                     }
                     else {
                         ForgedMethodHistory history = forgedMethod.getHistory();
-                        while ( history.getPrevHistory() != null ) {
-                            history = history.getPrevHistory();
-                        }
                         ctx.getMessager().printMessage(
                             this.method.getExecutable(),
                             Message.PROPERTYMAPPING_MAPPING_NOT_FOUND,
-                            history.getSourceElement(),
+                            history.getSourceType() + " " + history.getDottedSourceElement(),
                             history.getTargetType(),
-                            history.getTargetPropertyName(),
+                            history.getDottedTargetPropertyName(),
                             history.getTargetType(),
                             history.getSourceType()
                         );

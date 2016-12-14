@@ -594,10 +594,7 @@ public class PropertyMapping extends ModelElement {
             // copy mapper configuration from the source method, its the same mapper
             MapperConfiguration config = method.getMapperConfiguration();
             ForgedMethod methodRef = new ForgedMethod( name, sourceType, targetType, config, element,
-                new ForgedMethodHistory( getForgedMethodHistory(source), source.getSourceErrorMessagePart(), targetPropertyName,
-                    source.getSourceType(),
-                    targetType
-                )
+                getForgedMethodHistory(source)
             );
             IterableMappingMethod.Builder builder = new IterableMappingMethod.Builder();
 
@@ -636,10 +633,7 @@ public class PropertyMapping extends ModelElement {
             // copy mapper configuration from the source method, its the same mapper
             MapperConfiguration config = method.getMapperConfiguration();
             ForgedMethod methodRef = new ForgedMethod( name, sourceType, targetType, config, element,
-                new ForgedMethodHistory( getForgedMethodHistory(source), source.getSourceErrorMessagePart(), targetPropertyName,
-                    source.getSourceType(),
-                    targetType
-                )
+                getForgedMethodHistory(source)
             );
 
             MapMappingMethod.Builder builder = new MapMappingMethod.Builder();
@@ -697,9 +691,8 @@ public class PropertyMapping extends ModelElement {
                 ForgedMethod method = (ForgedMethod) this.method;
                 history = method.getHistory();
             }
-            return new ForgedMethodHistory( history, sourceRHS.getSourceErrorMessagePart(),
-                targetPropertyName, sourceRHS.getSourceType(), targetType
-            );
+            return new ForgedMethodHistory( history, getSourceElementName(),
+                targetPropertyName, sourceRHS.getSourceType(), targetType, true);
         }
 
         private String getName(Type sourceType, Type targetType) {
@@ -715,6 +708,19 @@ public class PropertyMapping extends ModelElement {
             }
             builder.append( type.getIdentification() );
             return builder.toString();
+        }
+
+        private String getSourceElementName() {
+            Parameter sourceParam = sourceReference.getParameter();
+            List<PropertyEntry> propertyEntries = sourceReference.getPropertyEntries();
+            if (propertyEntries.isEmpty()) {
+                return sourceParam.getName();
+            } else if (propertyEntries.size() == 1) {
+                PropertyEntry propertyEntry = propertyEntries.get(0);
+                return propertyEntry.getName();
+            } else {
+                return Strings.join(sourceReference.getElementNames(), ".");
+            }
         }
 
     }
