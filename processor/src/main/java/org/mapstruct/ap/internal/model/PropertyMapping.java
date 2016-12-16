@@ -594,7 +594,7 @@ public class PropertyMapping extends ModelElement {
             // copy mapper configuration from the source method, its the same mapper
             MapperConfiguration config = method.getMapperConfiguration();
             ForgedMethod methodRef = new ForgedMethod( name, sourceType, targetType, config, element,
-                getForgedMethodHistory(source)
+                getForgedMethodHistory(source, "[]")
             );
             IterableMappingMethod.Builder builder = new IterableMappingMethod.Builder();
 
@@ -633,7 +633,7 @@ public class PropertyMapping extends ModelElement {
             // copy mapper configuration from the source method, its the same mapper
             MapperConfiguration config = method.getMapperConfiguration();
             ForgedMethod methodRef = new ForgedMethod( name, sourceType, targetType, config, element,
-                getForgedMethodHistory(source)
+                getForgedMethodHistory(source, "{}")
             );
 
             MapMappingMethod.Builder builder = new MapMappingMethod.Builder();
@@ -686,13 +686,17 @@ public class PropertyMapping extends ModelElement {
         }
 
         private ForgedMethodHistory getForgedMethodHistory(SourceRHS sourceRHS) {
+            return getForgedMethodHistory( sourceRHS, "" );
+        }
+
+        private ForgedMethodHistory getForgedMethodHistory(SourceRHS sourceRHS, String suffix) {
             ForgedMethodHistory history = null;
             if ( method instanceof ForgedMethod ) {
                 ForgedMethod method = (ForgedMethod) this.method;
                 history = method.getHistory();
             }
-            return new ForgedMethodHistory( history, getSourceElementName(),
-                targetPropertyName, sourceRHS.getSourceType(), targetType, true);
+            return new ForgedMethodHistory( history, getSourceElementName() + suffix,
+                targetPropertyName + suffix, sourceRHS.getSourceType(), targetType, true);
         }
 
         private String getName(Type sourceType, Type targetType) {

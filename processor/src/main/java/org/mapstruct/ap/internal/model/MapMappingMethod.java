@@ -122,14 +122,6 @@ public class MapMappingMethod extends MappingMethod {
             if ( keyAssignment == null ) {
 
                 keyAssignment = forgeMapping( keySourceRHS, keySourceType, keyTargetType );
-//                if ( method instanceof ForgedMethod ) {
-//                    // leave messaging to calling property mapping
-//                    return null;
-//                }
-//                else {
-//                    ctx.getMessager().printMessage( method.getExecutable(),
-//                        Message.MAPMAPPING_KEY_MAPPING_NOT_FOUND );
-//                }
             }
 
             // find mapping method or conversion for value
@@ -161,14 +153,6 @@ public class MapMappingMethod extends MappingMethod {
 
                 valueAssignment = forgeMapping( valueSourceRHS, valueSourceType, valueTargetType );
 
-//                if ( method instanceof ForgedMethod ) {
-//                    // leave messaging to calling property mapping
-//                    return null;
-//                }
-//                else {
-//                    ctx.getMessager().printMessage( method.getExecutable(),
-//                        Message.MAPMAPPING_VALUE_MAPPING_NOT_FOUND );
-//                }
             }
 
             // mapNullToDefault
@@ -217,7 +201,8 @@ public class MapMappingMethod extends MappingMethod {
                 targetType,
                 method.getMapperConfiguration(),
                 method.getExecutable(),
-                history
+                new ForgedMethodHistory( history, stubPropertyName(sourceRHS.getSourceType().getName()),
+                    stubPropertyName(targetType.getName()), sourceRHS.getSourceType(), targetType, true)
             );
 
             Assignment assignment = new MethodReference( forgedMethod, null, targetType );
@@ -226,6 +211,10 @@ public class MapMappingMethod extends MappingMethod {
             forgedMethods.add( forgedMethod );
 
             return assignment;
+        }
+
+        private String stubPropertyName(String fullyQualifiedName) {
+            return fullyQualifiedName.substring(fullyQualifiedName.lastIndexOf('.') + 1).toLowerCase();
         }
 
         private String getName(Type sourceType, Type targetType) {

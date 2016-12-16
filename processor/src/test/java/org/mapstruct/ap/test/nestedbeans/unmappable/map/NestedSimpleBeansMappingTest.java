@@ -16,21 +16,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.mapstruct.ap.test.nestedbeans.unmappable;
+package org.mapstruct.ap.test.nestedbeans.unmappable.map;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mapstruct.ap.testutil.WithClasses;
 import org.mapstruct.ap.testutil.runner.AnnotationProcessorTestRunner;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 @WithClasses({
-    User.class, UserDto.class, Car.class, CarDto.class, House.class, HouseDto.class,
-    Wheel.class, WheelDto.class,
+    House.class, HouseDto.class,
+    Color.class, ColorDto.class,
     Roof.class, RoofDto.class,
         Land.class, LandDto.class,
-    UserDtoMapperSmart.class,
         LandMapper.class
 
 })
@@ -41,7 +38,7 @@ public class NestedSimpleBeansMappingTest {
     public void shouldMapNestedBeans() {
 
 
-        LandMapper.INSTANCE.landToDto(new Land(new House("Good", 1998, new Roof(1))));
+        LandMapper.INSTANCE.landToDto(new Land(new House()));
 
 //        User user = TestData.createUser();
 //
