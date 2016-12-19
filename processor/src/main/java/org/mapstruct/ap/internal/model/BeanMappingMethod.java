@@ -572,9 +572,9 @@ public class BeanMappingMethod extends MappingMethod {
                         ctx.getMessager().printMessage(
                             this.method.getExecutable(),
                             Message.PROPERTYMAPPING_MAPPING_NOT_FOUND,
-                            "property \"" + history.getSourceType() + " " + history.getDottedSourceElement() + "\"",
+                            history.createSourcePropertyErrorMessage(),
                             history.getTargetType(),
-                            history.getDottedTargetPropertyName(),
+                            history.createTargetPropertyName(),
                             history.getTargetType(),
                             history.getSourceType()
                         );

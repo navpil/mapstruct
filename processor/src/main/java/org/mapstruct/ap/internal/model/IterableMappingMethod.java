@@ -189,7 +189,7 @@ public class IterableMappingMethod extends MappingMethod {
                 method.getMapperConfiguration(),
                 method.getExecutable(),
                 new ForgedMethodHistory( history, stubPropertyName(sourceRHS.getSourceType().getName()),
-                    stubPropertyName(targetType.getName()), sourceRHS.getSourceType(), targetType, false)
+                    stubPropertyName(targetType.getName()), sourceRHS.getSourceType(), targetType, false, sourceRHS.getSourceErrorMessagePart() )
             );
 
             Assignment assignment = new MethodReference( forgedMethod, null, targetType );

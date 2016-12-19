@@ -696,7 +696,7 @@ public class PropertyMapping extends ModelElement {
                 history = method.getHistory();
             }
             return new ForgedMethodHistory( history, getSourceElementName() + suffix,
-                targetPropertyName + suffix, sourceRHS.getSourceType(), targetType, true);
+                targetPropertyName + suffix, sourceRHS.getSourceType(), targetType, true, "property" );
         }
 
         private String getName(Type sourceType, Type targetType) {

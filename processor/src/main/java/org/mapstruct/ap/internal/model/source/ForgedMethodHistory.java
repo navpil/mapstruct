@@ -28,19 +28,17 @@ public class ForgedMethodHistory {
     private final Type targetType;
     private final Type sourceType;
     private final boolean usePropertyNames;
+    private String elementType;
 
     public ForgedMethodHistory(ForgedMethodHistory history, String sourceElement, String targetPropertyName,
-                               Type sourceType, Type targetType, boolean usePropertyNames) {
+                               Type sourceType, Type targetType, boolean usePropertyNames, String elementType) {
         prevHistory = history;
         this.sourceElement = sourceElement;
         this.targetPropertyName = targetPropertyName;
         this.sourceType = sourceType;
         this.targetType = targetType;
         this.usePropertyNames = usePropertyNames;
-    }
-
-    public String getSourceElement() {
-        return sourceElement;
+        this.elementType = elementType;
     }
 
     public String getTargetPropertyName() {
@@ -55,11 +53,16 @@ public class ForgedMethodHistory {
         return sourceType;
     }
 
-    public ForgedMethodHistory getPrevHistory() {
-        return prevHistory;
+    public String createSourcePropertyErrorMessage() {
+        return elementType + " \"" + getSourceType() + " " +
+            stripBrackets( getDottedSourceElement() ) + "\"";
     }
 
-    public String getDottedSourceElement() {
+    public String createTargetPropertyName() {
+        return stripBrackets( getDottedTargetPropertyName() );
+    }
+
+    private String getDottedSourceElement() {
         if (prevHistory == null) {
             return sourceElement;
         } else {
@@ -71,7 +74,7 @@ public class ForgedMethodHistory {
         }
     }
 
-    public String getDottedTargetPropertyName() {
+    private String getDottedTargetPropertyName() {
         if (prevHistory == null) {
             return targetPropertyName;
         } else {
@@ -84,4 +87,11 @@ public class ForgedMethodHistory {
         }
     }
 
+    private String stripBrackets(String dottedName) {
+        return dottedName;
+//        if ( dottedName.endsWith( "[]" ) || dottedName.endsWith( "{}" )) {
+//            dottedName = dottedName.substring( 0, dottedName.length() - 2 );
+//        }
+//        return dottedName;
+    }
 }

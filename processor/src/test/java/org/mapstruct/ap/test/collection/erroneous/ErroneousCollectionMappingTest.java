@@ -115,8 +115,8 @@ public class ErroneousCollectionMappingTest {
             @Diagnostic(type = ErroneousCollectionNoElementMappingFound.class,
                 kind = Kind.ERROR,
                 line = 37,
-                messageRegExp = "Can't map .*AttributedString to .*String. " +
-                    "Consider to implement a mapping method: \".*String map(.*AttributedString value)")
+                messageRegExp = "Can't map .*AttributedString.* to .*String.*. " +
+                    "Consider to declare/implement a mapping method: \".*String map(.*AttributedString value)")
         }
     )
     public void shouldFailOnNoElementMappingFound() {
@@ -131,8 +131,8 @@ public class ErroneousCollectionMappingTest {
             @Diagnostic(type = ErroneousCollectionNoKeyMappingFound.class,
                 kind = Kind.ERROR,
                 line = 37,
-                messageRegExp = "Can't map .*AttributedString to .*String. " +
-                    "Consider to implement a mapping method: \".*String map(.*AttributedString value)")
+                messageRegExp = "Can't map .*AttributedString.* to .*String.*. " +
+                    "Consider to declare/implement a mapping method: \".*String map(.*AttributedString value)")
         }
     )
     public void shouldFailOnNoKeyMappingFound() {
@@ -147,8 +147,8 @@ public class ErroneousCollectionMappingTest {
             @Diagnostic(type = ErroneousCollectionNoValueMappingFound.class,
                 kind = Kind.ERROR,
                 line = 37,
-                messageRegExp = "Can't map .*AttributedString to .*String. " +
-                    "Consider to implement a mapping method: \".*String map(.*AttributedString value)")
+                messageRegExp = "Can't map .*AttributedString.* to .*String.*. " +
+                    "Consider to declare/implement a mapping method: \".*String map(.*AttributedString value)")
         }
     )
     public void shouldFailOnNoValueMappingFound() {

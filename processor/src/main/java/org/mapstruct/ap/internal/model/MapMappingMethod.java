@@ -202,7 +202,7 @@ public class MapMappingMethod extends MappingMethod {
                 method.getMapperConfiguration(),
                 method.getExecutable(),
                 new ForgedMethodHistory( history, stubPropertyName(sourceRHS.getSourceType().getName()),
-                    stubPropertyName(targetType.getName()), sourceRHS.getSourceType(), targetType, true)
+                    stubPropertyName(targetType.getName()), sourceRHS.getSourceType(), targetType, true, sourceRHS.getSourceErrorMessagePart())
             );
 
             Assignment assignment = new MethodReference( forgedMethod, null, targetType );
