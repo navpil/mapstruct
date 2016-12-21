@@ -222,7 +222,7 @@ public class MapMappingMethod extends MappingMethod {
         }
 
         private String stubPropertyName(String fullyQualifiedName) {
-            return fullyQualifiedName.substring( fullyQualifiedName.lastIndexOf( '.' ) + 1 ).toLowerCase();
+            return Strings.decapitalize( fullyQualifiedName.substring( fullyQualifiedName.lastIndexOf( '.' ) + 1 ) );
         }
 
         private String getName(Type sourceType, Type targetType) {
