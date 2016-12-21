@@ -32,22 +32,18 @@ public class ForgedMethodHistory {
     private final String targetPropertyName;
     private final Type targetType;
     private final Type sourceType;
+    private final boolean usePropertyNames;
+    private String elementType;
 
     public ForgedMethodHistory(ForgedMethodHistory history, String sourceElement, String targetPropertyName,
-                               Type sourceType, Type targetType) {
+                               Type sourceType, Type targetType, boolean usePropertyNames, String elementType) {
         prevHistory = history;
         this.sourceElement = sourceElement;
         this.targetPropertyName = targetPropertyName;
         this.sourceType = sourceType;
         this.targetType = targetType;
-    }
-
-    public String getSourceElement() {
-        return sourceElement;
-    }
-
-    public String getTargetPropertyName() {
-        return targetPropertyName;
+        this.usePropertyNames = usePropertyNames;
+        this.elementType = elementType;
     }
 
     public Type getTargetType() {
@@ -58,8 +54,51 @@ public class ForgedMethodHistory {
         return sourceType;
     }
 
-    public ForgedMethodHistory getPrevHistory() {
-        return prevHistory;
+    public String createSourcePropertyErrorMessage() {
+        return elementType + " \"" + getSourceType() + " " +
+            stripBrackets( getDottedSourceElement() ) + "\"";
     }
 
+    public String createTargetPropertyName() {
+        return stripBrackets( getDottedTargetPropertyName() );
+    }
+
+    private String getDottedSourceElement() {
+        if ( prevHistory == null ) {
+            return sourceElement;
+        }
+        else {
+            if ( usePropertyNames ) {
+                return prevHistory.getDottedSourceElement() + "." + sourceElement;
+            }
+            else {
+                return prevHistory.getDottedSourceElement();
+            }
+        }
+    }
+
+    private String getDottedTargetPropertyName() {
+        if ( prevHistory == null ) {
+            return targetPropertyName;
+        }
+        else {
+            if ( usePropertyNames ) {
+                return prevHistory.getDottedTargetPropertyName() + "." + targetPropertyName;
+            }
+            else {
+                return prevHistory.getDottedTargetPropertyName();
+            }
+
+        }
+    }
+
+    private String stripBrackets(String dottedName) {
+        return dottedName;
+//        if ( dottedName.endsWith( "[]" ) || dottedName.endsWith( "{}" )) {
+//            dottedName = dottedName.substring( 0, dottedName.length() - 2 );
+//        }
+//        return dottedName;
+    }
 }
+
+

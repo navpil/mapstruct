@@ -178,9 +178,9 @@ public class IterableMappingMethod extends MappingMethod {
 
         private Assignment forgeMapping(SourceRHS sourceRHS, Type sourceType, Type targetType) {
 
-            ForgedMethodHistory forgedMethodHistory = null;
+            ForgedMethodHistory history = null;
             if ( method instanceof ForgedMethod ) {
-                forgedMethodHistory = ( (ForgedMethod) method ).getHistory();
+                history = ( (ForgedMethod) method ).getHistory();
             }
             String name = getName( sourceType, targetType );
             forgedMethod = new ForgedMethod(
@@ -189,7 +189,8 @@ public class IterableMappingMethod extends MappingMethod {
                 targetType,
                 method.getMapperConfiguration(),
                 method.getExecutable(),
-                forgedMethodHistory
+                new ForgedMethodHistory( history, stubPropertyName(sourceRHS.getSourceType().getName()),
+                        stubPropertyName(targetType.getName()), sourceRHS.getSourceType(), targetType, false, sourceRHS.getSourceErrorMessagePart() )
             );
 
             Assignment assignment = new MethodReference(
@@ -200,6 +201,10 @@ public class IterableMappingMethod extends MappingMethod {
             assignment.setAssignment( sourceRHS );
 
             return assignment;
+        }
+
+        private String stubPropertyName(String fullyQualifiedName) {
+            return fullyQualifiedName.substring( fullyQualifiedName.lastIndexOf( '.' ) + 1 ).toLowerCase();
         }
 
         private String getName(Type sourceType, Type targetType) {
