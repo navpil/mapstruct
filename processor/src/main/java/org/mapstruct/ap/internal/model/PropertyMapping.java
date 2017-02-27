@@ -42,6 +42,7 @@ import org.mapstruct.ap.internal.model.assignment.SetterWrapperForCollectionsAnd
 import org.mapstruct.ap.internal.model.assignment.UpdateWrapper;
 import org.mapstruct.ap.internal.model.common.ModelElement;
 import org.mapstruct.ap.internal.model.common.Parameter;
+import org.mapstruct.ap.internal.model.common.ParameterBinding;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.mapstruct.ap.internal.model.source.ForgedMethod;
 import org.mapstruct.ap.internal.model.source.ForgedMethodHistory;
@@ -653,6 +654,15 @@ public class PropertyMapping extends ModelElement {
                 forgeMethodWithMappingOptions,
                 forgedNamedBased
             );
+
+            if (ctx.getForgedMethods().contains( forgedMethod )) {
+                Assignment assignment = MethodReference.forForgedMethod(
+                    forgedMethod,
+                    ParameterBinding.fromParameters( forgedMethod.getParameters() ) );
+                assignment.setAssignment( sourceRHS );
+                return assignment;
+            }
+            ctx.getForgedMethods().add( forgedMethod );
             return createForgedBeanAssignment( sourceRHS, forgedMethod );
         }
 

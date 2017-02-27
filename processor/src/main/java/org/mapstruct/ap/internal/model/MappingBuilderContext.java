@@ -19,6 +19,7 @@
 package org.mapstruct.ap.internal.model;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -29,6 +30,7 @@ import javax.lang.model.util.Types;
 import org.mapstruct.ap.internal.model.assignment.Assignment;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.mapstruct.ap.internal.model.common.TypeFactory;
+import org.mapstruct.ap.internal.model.source.ForgedMethod;
 import org.mapstruct.ap.internal.model.source.FormattingParameters;
 import org.mapstruct.ap.internal.model.source.Method;
 import org.mapstruct.ap.internal.model.source.SelectionParameters;
@@ -120,6 +122,7 @@ public class MappingBuilderContext {
     private final List<MapperReference> mapperReferences;
     private final MappingResolver mappingResolver;
     private final List<MappingMethod> mappingsToGenerate = new ArrayList<MappingMethod>();
+    private Set<ForgedMethod> forgedMethods = new HashSet<ForgedMethod>(  );
 
     public MappingBuilderContext(TypeFactory typeFactory,
                           Elements elementUtils,
@@ -139,6 +142,10 @@ public class MappingBuilderContext {
         this.mapperTypeElement = mapper;
         this.sourceModel = sourceModel;
         this.mapperReferences = mapperReferences;
+    }
+
+    public Set<ForgedMethod> getForgedMethods() {
+        return forgedMethods;
     }
 
     public TypeElement getMapperTypeElement() {
