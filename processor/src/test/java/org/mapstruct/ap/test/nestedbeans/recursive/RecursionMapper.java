@@ -23,14 +23,21 @@ import org.mapstruct.ReportingPolicy;
 import org.mapstruct.factory.Mappers;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public abstract class MapStructRecursionMapper {
+public abstract class RecursionMapper {
 
-    public static final MapStructRecursionMapper INSTANCE = Mappers.getMapper( MapStructRecursionMapper.class );
+    public static final RecursionMapper INSTANCE = Mappers.getMapper( RecursionMapper.class );
 
-    protected abstract Root mapRoot(RootDto rootDto);
+    public abstract Root mapRoot(RootDto rootDto);
 
     public static class Root {
         private Child child;
+
+        public Root() {
+        }
+
+        public Root(Child child) {
+            this.child = child;
+        }
 
         public Child getChild() {
             return child;
@@ -40,11 +47,38 @@ public abstract class MapStructRecursionMapper {
             this.child = child;
         }
 
+        @Override
+        public boolean equals(Object o) {
+            if ( this == o ) {
+                return true;
+            }
+            if ( o == null || getClass() != o.getClass() ) {
+                return false;
+            }
+
+            Root root = (Root) o;
+
+            return child != null ? child.equals( root.child ) : root.child == null;
+
+        }
+
+        @Override
+        public int hashCode() {
+            return child != null ? child.hashCode() : 0;
+        }
     }
 
     public static class Child {
         private String name;
-        private Child child; // recursion doesn't work
+        private Child child;
+
+        public Child() {
+        }
+
+        public Child(String name, Child child) {
+            this.name = name;
+            this.child = child;
+        }
 
         public String getName() {
             return name;
@@ -62,6 +96,30 @@ public abstract class MapStructRecursionMapper {
             this.child = child;
         }
 
+        @Override
+        public boolean equals(Object o) {
+            if ( this == o ) {
+                return true;
+            }
+            if ( o == null || getClass() != o.getClass() ) {
+                return false;
+            }
+
+            Child child1 = (Child) o;
+
+            if ( name != null ? !name.equals( child1.name ) : child1.name != null ) {
+                return false;
+            }
+            return child != null ? child.equals( child1.child ) : child1.child == null;
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result = name != null ? name.hashCode() : 0;
+            result = 31 * result + ( child != null ? child.hashCode() : 0 );
+            return result;
+        }
     }
 
     public static class RootDto {

@@ -655,14 +655,6 @@ public class PropertyMapping extends ModelElement {
                 forgedNamedBased
             );
 
-            if (ctx.getForgedMethods().contains( forgedMethod )) {
-                Assignment assignment = MethodReference.forForgedMethod(
-                    forgedMethod,
-                    ParameterBinding.fromParameters( forgedMethod.getParameters() ) );
-                assignment.setAssignment( sourceRHS );
-                return assignment;
-            }
-            ctx.getForgedMethods().add( forgedMethod );
             return createForgedBeanAssignment( sourceRHS, forgedMethod );
         }
 

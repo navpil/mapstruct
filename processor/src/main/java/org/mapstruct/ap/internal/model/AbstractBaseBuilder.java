@@ -56,12 +56,22 @@ class AbstractBaseBuilder<B extends AbstractBaseBuilder<B>> {
      * @return See above
      */
     Assignment createForgedBeanAssignment(SourceRHS sourceRHS, ForgedMethod forgedMethod) {
+
+        if (ctx.getForgedMethodsUnderCreation().containsKey( forgedMethod )) {
+            return createAssignment( sourceRHS, ctx.getForgedMethodsUnderCreation().get( forgedMethod ) );
+        } else {
+            ctx.getForgedMethodsUnderCreation().put( forgedMethod, forgedMethod );
+        }
+
+
         BeanMappingMethod forgedMappingMethod = new BeanMappingMethod.Builder()
             .forgedMethod( forgedMethod )
             .mappingContext( ctx )
             .build();
 
-        return createForgedAssignment( sourceRHS, forgedMethod, forgedMappingMethod );
+        Assignment forgedAssignment = createForgedAssignment( sourceRHS, forgedMethod, forgedMappingMethod );
+        ctx.getForgedMethodsUnderCreation().remove( forgedMethod );
+        return forgedAssignment;
     }
 
     Assignment createForgedAssignment(SourceRHS source, ForgedMethod methodRef, MappingMethod mappingMethod) {
@@ -76,6 +86,10 @@ class AbstractBaseBuilder<B extends AbstractBaseBuilder<B>> {
             methodRef = new ForgedMethod( existingName, methodRef );
         }
 
+        return createAssignment( source, methodRef );
+    }
+
+    private Assignment createAssignment(SourceRHS source, ForgedMethod methodRef) {
         Assignment assignment = MethodReference.forForgedMethod(
             methodRef,
             ParameterBinding.fromParameters( methodRef.getParameters() ) );

@@ -19,8 +19,9 @@
 package org.mapstruct.ap.internal.model;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.TypeElement;
@@ -122,7 +123,7 @@ public class MappingBuilderContext {
     private final List<MapperReference> mapperReferences;
     private final MappingResolver mappingResolver;
     private final List<MappingMethod> mappingsToGenerate = new ArrayList<MappingMethod>();
-    private Set<ForgedMethod> forgedMethods = new HashSet<ForgedMethod>(  );
+    private final Map<ForgedMethod, ForgedMethod> forgedMethodsUnderCreation = new HashMap<ForgedMethod, ForgedMethod>(  );
 
     public MappingBuilderContext(TypeFactory typeFactory,
                           Elements elementUtils,
@@ -144,8 +145,17 @@ public class MappingBuilderContext {
         this.mapperReferences = mapperReferences;
     }
 
-    public Set<ForgedMethod> getForgedMethods() {
-        return forgedMethods;
+    /**
+     * Returns a map which is used to track which forged methods are under creation.
+     * Used for cutting the possible infinite recursion of forged method creation.
+     *
+     * Map is used instead of set because not all fields of ForgedMethods are used in equals/hashCode and we are
+     * interested only in the first created ForgedMethod
+     *
+     * @return map of forged methods
+     */
+    public Map<ForgedMethod, ForgedMethod> getForgedMethodsUnderCreation() {
+        return forgedMethodsUnderCreation;
     }
 
     public TypeElement getMapperTypeElement() {
