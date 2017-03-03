@@ -57,9 +57,10 @@ class AbstractBaseBuilder<B extends AbstractBaseBuilder<B>> {
      */
     Assignment createForgedBeanAssignment(SourceRHS sourceRHS, ForgedMethod forgedMethod) {
 
-        if (ctx.getForgedMethodsUnderCreation().containsKey( forgedMethod )) {
+        if ( ctx.getForgedMethodsUnderCreation().containsKey( forgedMethod ) ) {
             return createAssignment( sourceRHS, ctx.getForgedMethodsUnderCreation().get( forgedMethod ) );
-        } else {
+        }
+        else {
             ctx.getForgedMethodsUnderCreation().put( forgedMethod, forgedMethod );
         }
 
@@ -92,7 +93,8 @@ class AbstractBaseBuilder<B extends AbstractBaseBuilder<B>> {
     private Assignment createAssignment(SourceRHS source, ForgedMethod methodRef) {
         Assignment assignment = MethodReference.forForgedMethod(
             methodRef,
-            ParameterBinding.fromParameters( methodRef.getParameters() ) );
+            ParameterBinding.fromParameters( methodRef.getParameters() )
+        );
         assignment.setAssignment( source );
 
         return assignment;

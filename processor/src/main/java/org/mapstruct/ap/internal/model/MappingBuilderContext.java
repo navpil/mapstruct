@@ -123,7 +123,8 @@ public class MappingBuilderContext {
     private final List<MapperReference> mapperReferences;
     private final MappingResolver mappingResolver;
     private final List<MappingMethod> mappingsToGenerate = new ArrayList<MappingMethod>();
-    private final Map<ForgedMethod, ForgedMethod> forgedMethodsUnderCreation = new HashMap<ForgedMethod, ForgedMethod>(  );
+    private final Map<ForgedMethod, ForgedMethod> forgedMethodsUnderCreation =
+        new HashMap<ForgedMethod, ForgedMethod>(  );
 
     public MappingBuilderContext(TypeFactory typeFactory,
                           Elements elementUtils,

@@ -18,17 +18,11 @@
  */
 package org.mapstruct.ap.internal.model;
 
-import static org.mapstruct.ap.internal.model.assignment.Assignment.AssignmentType.DIRECT;
-import static org.mapstruct.ap.internal.prism.NullValueCheckStrategyPrism.ALWAYS;
-import static org.mapstruct.ap.internal.util.Collections.first;
-import static org.mapstruct.ap.internal.util.Collections.last;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.DeclaredType;
 
@@ -42,7 +36,6 @@ import org.mapstruct.ap.internal.model.assignment.SetterWrapperForCollectionsAnd
 import org.mapstruct.ap.internal.model.assignment.UpdateWrapper;
 import org.mapstruct.ap.internal.model.common.ModelElement;
 import org.mapstruct.ap.internal.model.common.Parameter;
-import org.mapstruct.ap.internal.model.common.ParameterBinding;
 import org.mapstruct.ap.internal.model.common.Type;
 import org.mapstruct.ap.internal.model.source.ForgedMethod;
 import org.mapstruct.ap.internal.model.source.ForgedMethodHistory;
@@ -59,6 +52,11 @@ import org.mapstruct.ap.internal.util.Message;
 import org.mapstruct.ap.internal.util.Strings;
 import org.mapstruct.ap.internal.util.ValueProvider;
 import org.mapstruct.ap.internal.util.accessor.Accessor;
+
+import static org.mapstruct.ap.internal.model.assignment.Assignment.AssignmentType.DIRECT;
+import static org.mapstruct.ap.internal.prism.NullValueCheckStrategyPrism.ALWAYS;
+import static org.mapstruct.ap.internal.util.Collections.first;
+import static org.mapstruct.ap.internal.util.Collections.last;
 
 /**
  * Represents the mapping between a source and target property, e.g. from {@code String Source#foo} to
